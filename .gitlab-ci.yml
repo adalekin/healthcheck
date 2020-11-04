@@ -1,0 +1,75 @@
+stages:
+  - Static Analysis
+  - Test
+
+.shared_prepare_env_hidden_key: &shared_prepare_env
+  tags:
+    - docker
+  before_script:
+    - mkdir -p 0700 ~/.ssh
+    - ssh-keyscan gitlab.everynet.io >> ~/.ssh/known_hosts
+    - eval $(ssh-agent -s)
+    - echo "$CHECKOUT_PRIVATE_KEY" | ssh-add - > /dev/null
+    - pip install -r requirements.txt
+    - pip install -r requirements-test.txt
+
+pylint:python27:
+  stage: Static Analysis
+  image: python:2.7
+  <<: *shared_prepare_env
+  script:
+    - pylint healthcheck
+    - pylint tests
+
+pytest:python27:
+  stage: Test
+  image: python:2.7
+  <<: *shared_prepare_env
+  script:
+    - python -m gevent.monkey $(which pytest)
+
+pylint:python35:
+  stage: Static Analysis
+  image: python:3.5
+  <<: *shared_prepare_env
+  script:
+    - pylint healthcheck
+    - pylint tests
+
+pytest:python35:
+  stage: Test
+  image: python:3.5
+  <<: *shared_prepare_env
+  script:
+    - python -m gevent.monkey $(which pytest)
+
+pylint:python36:
+  stage: Static Analysis
+  image: python:3.6
+  <<: *shared_prepare_env
+  script:
+    - pylint healthcheck
+    - pylint tests
+
+pytest:python36:
+  stage: Test
+  image: python:3.6
+  <<: *shared_prepare_env
+  script:
+    - python -m gevent.monkey $(which pytest)
+  coverage: '/TOTAL\s+\d+\s+\d+\s+\d+\s+\d+\s+(\d+%)/'
+
+pylint:python37:
+  stage: Static Analysis
+  image: python:3.7
+  <<: *shared_prepare_env
+  script:
+    - pylint healthcheck
+    - pylint tests
+
+pytest:python37:
+  stage: Test
+  image: python:3.7
+  <<: *shared_prepare_env
+  script:
+    - python -m gevent.monkey $(which pytest)

@@ -1,0 +1,5 @@
+git+ssh://git@gitlab.everynet.io/platform/libs/wsgiref-fake.git@v1.0.3#egg=wsgiref-fake[gevent]
+pylint>=1.9.5
+pytest-cov>=2.7.1
+pytest>=4.6.9
+requests-mock>=1.7.0
