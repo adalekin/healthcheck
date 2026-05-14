@@ -12,7 +12,7 @@
 
 ## Install
 
-From PyPI (after you publish a release):
+From PyPI:
 
 ```sh
 pip install approck-healthcheck
@@ -127,20 +127,6 @@ uv run ruff format healthcheck tests
 ## Contributing
 
 Issues and **pull requests** (including from forks) are welcome. Please run `uv run ruff check`, `uv run ruff format --check`, and `uv run pytest` before submitting a change.
-
-## Publishing to PyPI
-
-Project on PyPI: **[approck-healthcheck](https://pypi.org/project/approck-healthcheck/)**.
-
-PyPI uploads run from [`release.yml`](.github/workflows/release.yml) when a maintainer pushes a version tag (`v*`) to GitHub. Configure a [pending trusted publisher](https://docs.pypi.org/trusted-publishers/) on PyPI for this repository and workflow file **`release.yml`**, with GitHub **Environment** name **`pypi`** (must match the workflow). Restrict the **pypi** [environment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment) with **required reviewers** if collaborators have write access.
-
-Local build:
-
-```sh
-uv build
-```
-
-You can still upload `dist/*` manually with `twine` if you prefer.
 
 ## License
 
