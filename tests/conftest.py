@@ -5,7 +5,7 @@ from wsgiref_fake.server import make_server
 from healthcheck.application import create_application
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def fx_application():
     app = create_application()
     app["workers"] = 1
@@ -13,18 +13,18 @@ def fx_application():
     return app
 
 
-@pytest.fixture(scope="function")
-def fx_application_without_workers(fx_application):  # noqa pylint: disable=redefined-outer-name
+@pytest.fixture
+def fx_application_without_workers(fx_application):
     fx_application["workers"] = 0
 
     return fx_application
 
 
-@pytest.fixture(scope="function")
-def fx_server(fx_application):  # noqa pylint: disable=redefined-outer-name
+@pytest.fixture
+def fx_server(fx_application):
     return make_server(app=fx_application)
 
 
-@pytest.fixture(scope="function")
-def fx_http_client(fx_server):  # noqa pylint: disable=redefined-outer-name
+@pytest.fixture
+def fx_http_client(fx_server):
     return HTTPClient(server=fx_server)

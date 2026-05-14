@@ -14,14 +14,14 @@ def _handle_health_live(application):
     return status, response_body, headers
 
 
-def health_live(application, environ, start_fn):  # noqa pylint: disable=unused-argument
+def health_live(application, environ, start_fn):
     status, response_body, headers = _handle_health_live(application)
 
     start_fn(status, headers)
     return [response_body]
 
 
-def health_ready(application, environ, start_fn):  # noqa pylint: disable=unused-argument
+def health_ready(application, environ, start_fn):
     status, response_body, headers = _handle_health_live(application)
 
     # FIXME: make sure _handle_health_live status more clear

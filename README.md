@@ -1,21 +1,45 @@
 # Healthcheck
 
-`Healthcheck` provides liveness and readiness probes over HTTP. It uses the statsD protocol over
-UDP to receive metrics and provides liveness and readiness HTTP endpoints.
+[![CI](https://github.com/adalekin/healthcheck/actions/workflows/ci.yml/badge.svg)](https://github.com/adalekin/healthcheck/actions/workflows/ci.yml)
+[![PyPI publish](https://github.com/adalekin/healthcheck/actions/workflows/release.yml/badge.svg)](https://github.com/adalekin/healthcheck/actions/workflows/release.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Usage
+`Healthcheck` is a small sidecar-style process that exposes **liveness** and **readiness** HTTP endpoints. It listens for StatsD-style UDP gauges (for example `gunicorn.workers`) so the HTTP layer can reflect how many workers are alive.
 
-First of all you need to run `Healthcheck` web application:
+## Requirements
+
+- Python 3.12 or newer
+
+## Install
+
+From PyPI (after you publish a release):
 
 ```sh
+pip install approck-healthcheck
+```
+
+The importable Python package remains **`healthcheck`** (for example `python -m healthcheck`, `from healthcheck.application import create_application`).
+
+From a git checkout with [uv](https://docs.astral.sh/uv/):
+
+```sh
+uv sync --locked
+uv run healthcheck --help
+```
+
+## Run
+
+```sh
+uv run healthcheck --host 0.0.0.0 --port 8001
+# or
 python -m healthcheck --host 0.0.0.0 --port 8001
 ```
 
-After that you have the following integration options:
+## Integrations
 
 ### Gevent
 
-TODO
+The `healthcheck` CLI starts a Gevent `WSGIServer` for `/health/*` and a UDP StatsD listener on the configured host and port. Your workers (or Gunicorn hooks) should emit gauge metrics named `workers` or `gunicorn.workers` so liveness reflects the worker count.
 
 ### Gunicorn
 
@@ -28,17 +52,17 @@ from healthcheck.gunicorn.hooks import *
 # ...
 ```
 
-## Command line arguments
+## Command line
 
 ```
-usage: __main__.py [-h] [-H HOST] [-P PORT] [--statsd-host STATSD_HOST]
-                   [--statsd-port STATSD_PORT] [-v]
-                   [--application-health-ready-url URL]
+usage: healthcheck [-h] [-H HOST] [-P PORT] [--statsd-host STATSD_HOST]
+                   [--statsd-port STATSD_PORT]
+                   [--application-health-ready-url URL] [-v]
 
 A simple "sidecar" healthcheck application. It uses the statsD protocol over
 UDP to receive metrics and provides liveness and readiness HTTP endpoints.
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -H HOST, --host HOST  The host that the server should bind on (default:
                         localhost).
@@ -59,27 +83,65 @@ optional arguments:
 
 - `GET /health/live`
 
-  **Liveness Probe**. Is designed to know when the application is running.
+  **Liveness probe** — indicates whether the process considers workers available.
 
-  Status Codes:
-  - **200** OK
-  - **422** The service is not down
+  Status codes:
+  - **200** — workers gauge is positive.
+  - **422** — no workers reported (`NoWorkers`).
 
-    **Response JSON Object:**
-    - code (string). The error code.
-      - NoWorkers. There are no any workers.
-    - description (string). The error description.
+  Error JSON:
+  - `code` (string), e.g. `NoWorkers`.
+  - `description` (string).
 
 - `GET /health/ready`
 
-  **Readiness Probe**. Is designed to know when the application is ready to serve the request.
+  **Readiness probe** — same worker gate as liveness; if `--application-health-ready-url` is set, the handler proxies JSON from that URL or returns `ServiceNotReady` on non-200 responses.
 
-  `Healthcheck` makes a request on `--application-health-ready-url` to get a detailed application readiness state in the current configuration.
+  Status codes:
+  - **200** — ready (including proxied JSON from the application URL when configured).
+  - **422** — not ready.
 
-  Status Codes:
-  - **200** OK
-  - **422** The service is not ready to serve the client requests
+## Development
 
-    **Response JSON Object:**
-    - The service name.
-    - The service current status.
+Clone the repository, then install dependencies (uses the committed `uv.lock`) and run checks:
+
+```bash
+uv sync --locked
+uv run ruff check healthcheck tests
+uv run ruff format --check healthcheck tests
+uv run pytest
+```
+
+To refresh dev dependencies and regenerate the lockfile:
+
+```bash
+uv lock --upgrade
+```
+
+To apply Ruff formatting (instead of only checking):
+
+```bash
+uv run ruff format healthcheck tests
+```
+
+## Contributing
+
+Issues and **pull requests** (including from forks) are welcome. Please run `uv run ruff check`, `uv run ruff format --check`, and `uv run pytest` before submitting a change.
+
+## Publishing to PyPI
+
+Project on PyPI: **[approck-healthcheck](https://pypi.org/project/approck-healthcheck/)**.
+
+PyPI uploads run from [`release.yml`](.github/workflows/release.yml) when a maintainer pushes a version tag (`v*`) to GitHub. Configure a [pending trusted publisher](https://docs.pypi.org/trusted-publishers/) on PyPI for this repository and workflow file **`release.yml`**, with GitHub **Environment** name **`pypi`** (must match the workflow). Restrict the **pypi** [environment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment) with **required reviewers** if collaborators have write access.
+
+Local build:
+
+```sh
+uv build
+```
+
+You can still upload `dist/*` manually with `twine` if you prefer.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

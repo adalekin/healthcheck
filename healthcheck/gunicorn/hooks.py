@@ -7,27 +7,27 @@ WORKERS = {}
 
 
 def _ensure_workers(app):
-    global WORKERS  # noqa pylint: disable=global-statement
+    global WORKERS
 
     WORKERS = {pid: worker for pid, worker in WORKERS.items() if psutil.pid_exists(pid)}
 
     statsd = Statsd(app.cfg)
 
     statsd.debug(
-        "{0} workers".format(len(WORKERS)),
+        f"{len(WORKERS)} workers",
         extra={"metric": "gunicorn.workers", "value": len(WORKERS), "mtype": "gauge"},
     )
 
 
 def _add_worker(worker):
-    global WORKERS  # noqa pylint: disable=global-statement
+    global WORKERS
     WORKERS[worker.pid] = worker
 
     _ensure_workers(worker.app)
 
 
 def _remove_worker(worker):
-    global WORKERS  # noqa pylint: disable=global-statement
+    global WORKERS
 
     if worker.pid in WORKERS:
         del WORKERS[worker.pid]
@@ -43,5 +43,5 @@ def worker_abort(worker):
     _remove_worker(worker)
 
 
-def worker_exit(server, worker):  # noqa pylint: disable=unused-argument
+def worker_exit(_server, worker):
     _remove_worker(worker)

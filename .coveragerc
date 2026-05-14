@@ -1,7 +1,7 @@
 [run]
 branch = True
-concurrency = gevent
-source = .
+concurrency = greenlet
+source = healthcheck
 omit = tests/*
 
 [report]

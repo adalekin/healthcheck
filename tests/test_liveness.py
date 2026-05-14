@@ -1,4 +1,4 @@
-def test_liveness_no_workers(fx_application_without_workers, fx_http_client):  # noqa pylint: disable=unused-argument
+def test_liveness_no_workers(fx_application_without_workers, fx_http_client):
     response = fx_http_client.request(method="GET", path="/health/live")
     assert response.status == 422
 
